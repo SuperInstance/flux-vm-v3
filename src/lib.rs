@@ -15,6 +15,8 @@ pub mod parallel;
 pub mod check;
 pub mod vm;
 pub mod bench;
+pub mod jit;
+pub mod jit_x86;
 
 pub use error::{FluxError, FluxResult};
 pub use opcode::OpCode;
