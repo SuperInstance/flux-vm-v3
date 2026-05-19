@@ -14,3 +14,8 @@ criterion = "0.5"
 name = "flux_bench"
 harness = false
 path = "benches/flux_bench.rs"
+
+[[bench]]
+name = "real_world_bench"
+harness = false
+path = "benches/real_world_bench.rs"
