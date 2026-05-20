@@ -1,8 +1,6 @@
 # flux-vm-v3
 
-A stack-based virtual machine for constraint checking.
-
-60 opcodes. Stack-based. No backward jumps (termination guaranteed). Proof-carrying execution.
+A stack-based virtual machine for constraint checking. 60 opcodes, deterministic execution, SHA-256 proof certificates.
 
 ---
 
