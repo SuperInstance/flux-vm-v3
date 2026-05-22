@@ -136,7 +136,7 @@ pub fn all_presets() -> Vec<Preset> {
         (
             "robotics_ros",
             vec![
-                (-3.14159, 3.14159, "joint_angle_rad"),
+                (-std::f64::consts::PI, std::f64::consts::PI, "joint_angle_rad"),
                 (-10.0, 10.0, "angular_vel_rads"),
                 (-5.0, 5.0, "linear_vel_ms"),
                 (0.0, 100.0, "torque_pct"),
