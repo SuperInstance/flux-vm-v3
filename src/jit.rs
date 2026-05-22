@@ -320,9 +320,8 @@ pub struct JitChecker {
     native_code: Option<Vec<u8>>,
 }
 
-// Safety: JitChecker is thread-safe — the native code is read-only after construction
-unsafe impl Sync for JitChecker {}
-unsafe impl Send for JitChecker {}
+// JitChecker is thread-safe — the native code is read-only after construction.
+// Vec<u8> is already Send + Sync, so no manual impls are needed.
 
 impl JitChecker {
     /// Build a JIT checker from FLUX-C bytecode
@@ -396,7 +395,7 @@ impl JitChecker {
     fn check_rust(&self, value: f64) -> u8 {
         // NaN violates all constraints
         if value.is_nan() {
-            return (1u8 << self.n) - 1;
+            return if self.n >= 8 { 0xFF } else { (1u8 << self.n) - 1 };
         }
 
         let mut mask: u8 = 0;

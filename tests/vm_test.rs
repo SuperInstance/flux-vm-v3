@@ -419,3 +419,68 @@ fn test_invalid_opcode() {
     vm.load_bytecode(&[0xFE]);
     assert!(vm.run().is_err());
 }
+
+#[test]
+fn test_div_overflow_min_by_neg_one() {
+    let mut vm = FluxVM::new();
+    let bc = [
+        OpCode::Push as u8, 0x00, 0x00, 0x00, 0x80, // i32::MIN
+        OpCode::Push as u8, 0xff, 0xff, 0xff, 0xff, // -1
+        OpCode::Div as u8,
+        OpCode::Halt as u8,
+    ];
+    vm.load_bytecode(&bc);
+    assert!(vm.run().is_err(), "i32::MIN / -1 should error");
+}
+
+#[test]
+fn test_abs_overflow_min() {
+    let mut vm = FluxVM::new();
+    let bc = [
+        OpCode::Push as u8, 0x00, 0x00, 0x00, 0x80, // i32::MIN
+        OpCode::Abs as u8,
+        OpCode::Halt as u8,
+    ];
+    vm.load_bytecode(&bc);
+    assert!(vm.run().is_err(), "abs(i32::MIN) should error");
+}
+
+#[test]
+fn test_batch_check_negative_count() {
+    let mut vm = FluxVM::new();
+    vm.load_constraints(vec![Constraint::new(0, 100, "test")]);
+    let bc = [
+        OpCode::Push as u8, 0xff, 0xff, 0xff, 0xff, // -1
+        OpCode::BatchCheck as u8,
+        OpCode::Halt as u8,
+    ];
+    vm.load_bytecode(&bc);
+    assert!(vm.run().is_err(), "BatchCheck with negative count should error");
+}
+
+#[test]
+fn test_call_stack_limit() {
+    let mut vm = FluxVM::new();
+    vm.set_max_cycles(10000);
+    // CallBounded to self repeatedly to exhaust call stack
+    let bc = [
+        OpCode::CallBounded as u8, 0, 0, // target 0 (start of bytecode)
+        OpCode::Halt as u8,
+    ];
+    vm.load_bytecode(&bc);
+    assert!(vm.run().is_err(), "unbounded recursion should hit call stack limit");
+}
+
+#[test]
+fn test_checkpoint_limit() {
+    let mut vm = FluxVM::new();
+    vm.set_max_cycles(10000);
+    // Checkpoint + CallBounded to self exhausts both checkpoint and call storage
+    let bc = [
+        OpCode::Checkpoint as u8,
+        OpCode::CallBounded as u8, 0, 0, // call self at offset 0
+        OpCode::Halt as u8,
+    ];
+    vm.load_bytecode(&bc);
+    assert!(vm.run().is_err(), "unbounded checkpoints should hit limit");
+}

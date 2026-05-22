@@ -253,6 +253,9 @@ impl FluxVM {
                 if b == 0 {
                     return Err(FluxError::DivisionByZero);
                 }
+                if a == i32::MIN && b == -1 {
+                    return Err(FluxError::Overflow);
+                }
                 self.push(a / b)?;
             }
             OpCode::Saturate => {
@@ -274,6 +277,9 @@ impl FluxVM {
             }
             OpCode::Abs => {
                 let v = self.pop()?;
+                if v == i32::MIN {
+                    return Err(FluxError::Overflow);
+                }
                 self.push(v.abs())?;
             }
 
@@ -340,7 +346,11 @@ impl FluxVM {
                 if self.constraints.is_empty() {
                     return Err(FluxError::NoConstraint);
                 }
-                let count = self.pop()? as usize;
+                let count_i32 = self.pop()?;
+                if count_i32 < 0 {
+                    return Err(FluxError::InvalidJump(count_i32 as usize));
+                }
+                let count = (count_i32 as usize).min(self.stack.len());
                 let (lo, hi) = {
                     let c = self.constraints.first().unwrap();
                     (c.lo, c.hi)
@@ -474,6 +484,9 @@ impl FluxVM {
                 if target > self.bytecode.len() {
                     return Err(FluxError::InvalidJump(target));
                 }
+                if self.call_stack.len() >= crate::memory::STACK_LIMIT {
+                    return Err(FluxError::StackOverflow);
+                }
                 self.call_stack.push(self.pc);
                 self.pc = target;
             }
@@ -487,6 +500,9 @@ impl FluxVM {
                 // Don't break here — caller will check
             }
             OpCode::Checkpoint => {
+                if self.checkpoints.len() >= crate::memory::STACK_LIMIT {
+                    return Err(FluxError::StackOverflow);
+                }
                 self.checkpoints.push(Checkpoint {
                     pc: self.pc,
                     stack_len: self.stack.len(),
@@ -562,8 +578,8 @@ impl FluxVM {
 
             // ── Streaming ──
             OpCode::StreamOpen => {
-                let batch_size = self.pop().unwrap_or(64);
-                self.stream.open(batch_size as usize)?;
+                let batch_size = self.pop()?;
+                self.stream.open(batch_size.max(1) as usize)?;
             }
             OpCode::StreamCheck => {
                 if self.stream.is_open() {

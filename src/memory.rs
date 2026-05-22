@@ -25,19 +25,21 @@ impl BoundedMemory {
     }
 
     pub fn write(&mut self, offset: usize, data: &[u8]) -> FluxResult<()> {
-        if offset + data.len() > HEAP_SIZE {
+        let end = offset.checked_add(data.len()).ok_or(FluxError::MemoryExceeded)?;
+        if end > HEAP_SIZE {
             return Err(FluxError::MemoryExceeded);
         }
-        self.heap[offset..offset + data.len()].copy_from_slice(data);
-        self.heap_used = self.heap_used.max(offset + data.len());
+        self.heap[offset..end].copy_from_slice(data);
+        self.heap_used = self.heap_used.max(end);
         Ok(())
     }
 
     pub fn read(&self, offset: usize, len: usize) -> FluxResult<&[u8]> {
-        if offset + len > HEAP_SIZE {
+        let end = offset.checked_add(len).ok_or(FluxError::MemoryExceeded)?;
+        if end > HEAP_SIZE {
             return Err(FluxError::MemoryExceeded);
         }
-        Ok(&self.heap[offset..offset + len])
+        Ok(&self.heap[offset..end])
     }
 
     pub fn read_i32(&self, offset: usize) -> FluxResult<i32> {
