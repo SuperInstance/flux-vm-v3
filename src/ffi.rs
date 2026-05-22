@@ -1,4 +1,4 @@
-use std::os::raw::{c_float, c_int, c_uint8_t};
+use std::os::raw::{c_float, c_int, c_uchar};
 use std::slice;
 
 /// C FFI: Check a batch of room latents against neural bounds.
@@ -29,7 +29,7 @@ pub extern "C" fn flux_check_batch(
     max_bound: c_float,
     max_l2: c_float,
     max_var: c_float,
-    violations: *mut c_uint8_t,
+    violations: *mut c_uchar,
 ) -> c_int {
     if latents.is_null() || violations.is_null() {
         return -1;
