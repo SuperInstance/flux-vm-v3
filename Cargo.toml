@@ -3,6 +3,9 @@ name = "flux-vm-v3"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
 sha2 = "0.10"
 rayon = "1.8"
