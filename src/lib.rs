@@ -17,6 +17,7 @@ pub mod vm;
 pub mod bench;
 pub mod jit;
 pub mod jit_x86;
+pub mod ffi;
 
 pub use error::{FluxError, FluxResult};
 pub use opcode::OpCode;
