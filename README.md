@@ -135,3 +135,6 @@ test result: ok. 29 passed; 0 failed; 0 ignored
 ## License
 
 MIT
+
+
+Part of the [SuperInstance OpenConstruct](https://github.com/SuperInstance/OpenConstruct) ecosystem.
